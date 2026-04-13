@@ -5,6 +5,7 @@ import base64
 import json
 from PIL import Image
 import io
+import os
 
 app = Flask(__name__)
 
@@ -129,4 +130,5 @@ Only output raw HTML code, no explanations, no markdown backticks."""
     return jsonify({"html": enhanced_html})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=False)
