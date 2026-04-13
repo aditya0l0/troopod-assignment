@@ -6,11 +6,13 @@ import json
 from PIL import Image
 import io
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
 # ---- PASTE YOUR OPENROUTER API KEY HERE ----
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 
 def scrape_page(url):
     try:
