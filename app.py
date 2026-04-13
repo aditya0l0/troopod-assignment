@@ -7,6 +7,8 @@ from PIL import Image
 import io
 import os
 from dotenv import load_dotenv
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 load_dotenv()
 
 app = Flask(__name__)
@@ -18,7 +20,7 @@ print(f"API KEY STATUS: {OPENROUTER_API_KEY[:10] if OPENROUTER_API_KEY != 'NOT_F
 def scrape_page(url):
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10, verify=False)
         soup = BeautifulSoup(response.text, "html.parser")
         title = soup.title.string if soup.title else ""
         headings = [h.get_text(strip=True) for h in soup.find_all(["h1", "h2", "h3"])]
