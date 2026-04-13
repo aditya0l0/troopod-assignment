@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Landing Page Personalizer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2rem; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .card { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .card h2 { font-size: 1.2rem; color: #333; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; color: #555; margin-bottom: 8px; font-size: 0.9rem; }
+        input[type="text"], input[type="url"] {
+            width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0;
+            border-radius: 10px; font-size: 1rem; transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="url"]:focus {
+            outline: none; border-color: #667eea;
+        }
+        .upload-area {
+            border: 2px dashed #cbd5e0; border-radius: 10px; padding: 30px;
+            text-align: center; cursor: pointer; transition: all 0.2s; background: #f7fafc;
+        }
+        .upload-area:hover { border-color: #667eea; background: #ebf4ff; }
+        .upload-area input { display: none; }
+        .upload-area p { color: #718096; margin-top: 8px; font-size: 0.9rem; }
+        #preview-img { max-width: 200px; max-height: 200px; margin-top: 12px; border-radius: 8px; display: none; }
+        .btn {
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 10px; font-size: 1rem;
+            font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .status { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; display: none; }
+        .status.loading { background: #ebf8ff; color: #2b6cb0; display: block; }
+        .status.success { background: #f0fff4; color: #276749; display: block; }
+        .status.error { background: #fff5f5; color: #c53030; display: block; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+        .tab { padding: 8px 20px; border-radius: 8px; border: 2px solid #e2e8f0; background: white; cursor: pointer; font-weight: 600; color: #718096; }
+        .tab.active { border-color: #667eea; color: #667eea; background: #ebf4ff; }
+        #html-output { display: none; }
+        #preview-output { display: none; }
+        textarea { width: 100%; height: 400px; padding: 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: monospace; font-size: 0.85rem; resize: vertical; }
+        iframe { width: 100%; height: 500px; border: 2px solid #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 AI Landing Page Personalizer</h1>
+        <p>Upload your ad creative + landing page URL → Get a CRO-optimized personalized page</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📥 Input</h2>
+            <div class="form-group">
+                <label>Ad Creative Image</label>
+                <div class="upload-area" onclick="document.getElementById('image-input').click()">
+                    <input type="file" id="image-input" accept="image/*" onchange="previewImage(this)">
+                    <div>📸 Click to upload your ad image</div>
+                    <p>PNG, JPG, JPEG supported</p>
+                    <img id="preview-img" src="" alt="Preview">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Landing Page URL</label>
+                <input type="url" id="url-input" placeholder="https://www.perfora.in">
+            </div>
+            <div class="status" id="status-box">Processing...</div>
+            <button class="btn" onclick="generate()" id="generate-btn">✨ Generate Personalized Page</button>
+        </div>
+
+        <div class="card" id="output-card" style="display:none">
+            <h2>📤 Output</h2>
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('html')">💻 HTML Code</button>
+                <button class="tab" onclick="showTab('preview')">👁️ Live Preview</button>
+            </div>
+            <div id="html-output" style="display:block">
+                <textarea id="html-code" readonly></textarea>
+            </div>
+            <div id="preview-output">
+                <iframe id="preview-frame"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.getElementById('preview-img');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if (tab === 'html') {
+                document.getElementById('html-output').style.display = 'block';
+                document.getElementById('preview-output').style.display = 'none';
+                document.querySelectorAll('.tab')[0].classList.add('active');
+            } else {
+                document.getElementById('html-output').style.display = 'none';
+                document.getElementById('preview-output').style.display = 'block';
+                document.querySelectorAll('.tab')[1].classList.add('active');
+            }
+        }
+
+        async function generate() {
+            const imageInput = document.getElementById('image-input');
+            const urlInput = document.getElementById('url-input');
+            const statusBox = document.getElementById('status-box');
+            const btn = document.getElementById('generate-btn');
+
+            if (!imageInput.files[0]) {
+                alert('Please upload an ad image first!');
+                return;
+            }
+            if (!urlInput.value) {
+                alert('Please enter a landing page URL!');
+                return;
+            }
+
+            // Show loading
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating...';
+            statusBox.className = 'status loading';
+            statusBox.textContent = '🔄 Analyzing ad + scraping page + generating enhanced version...';
+
+            const formData = new FormData();
+            formData.append('ad_image', imageInput.files[0]);
+            formData.append('landing_url', urlInput.value);
+
+            try {
+                const response = await fetch('/enhance', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.error) {
+                    statusBox.className = 'status error';
+                    statusBox.textContent = '❌ ' + result.error;
+                } else {
+                    statusBox.className = 'status success';
+                    statusBox.textContent = '✅ Done! Enhanced page generated successfully.';
+                    document.getElementById('html-code').value = result.html;
+                    const iframe = document.getElementById('preview-frame');
+                    iframe.srcdoc = result.html;
+                    document.getElementById('output-card').style.display = 'block';
+                }
+            } catch (err) {
+                statusBox.className = 'status error';
+                statusBox.textContent = '❌ Something went wrong. Please try again.';
+            }
+
+            btn.disabled = false;
+            btn.textContent = '✨ Generate Personalized Page';
+        }
+    </script>
+</body>
+</html>
