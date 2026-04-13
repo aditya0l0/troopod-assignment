@@ -12,7 +12,8 @@ load_dotenv()
 app = Flask(__name__)
 
 # ---- PASTE YOUR OPENROUTER API KEY HERE ----
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "NOT_FOUND")
+print(f"API KEY STATUS: {OPENROUTER_API_KEY[:10] if OPENROUTER_API_KEY != 'NOT_FOUND' else 'NOT_FOUND'}")
 
 def scrape_page(url):
     try:
